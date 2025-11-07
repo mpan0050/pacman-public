@@ -31,6 +31,7 @@
         (enemy_medium_distance ?e - enemy ?a - current_agent) ; noisy distance return longer than 15 
         (enemy_short_distance ?e - enemy ?a - current_agent) ; noisy distance return shorter than 15 
 
+        (2_food_in_backpack ?a - team) ; more than 2 food in backpack
         (3_food_in_backpack ?a - team) ; more than 3 food in backpack
         (5_food_in_backpack ?a - team)  ; more than 5 food in backpack
         (10_food_in_backpack ?a - team)    ; more than 10 food in backpack
@@ -47,6 +48,12 @@
         (near_ally  ?a - current_agent) ; is ally near 4 grid distance
         (is_scared ?x) ;is enemy, current agent, or the ally in panic (due to capsule eaten by other side)
 
+        ; New strategic predicates
+        (invaders_present) ; at least one enemy is in our territory
+        (can_hunt_ghosts) ; scared ghosts are available to hunt
+        (scared_ghost_near ?a - team) ; scared ghost within 4 grid distance
+        (is_attacker ?a - current_agent) ; agent role is attacker
+        (is_defender ?a - current_agent) ; agent role is defender
 
         ;Cooperative predicates
         ;The states of the following predicates are not collected by demo team_ddl code;
@@ -64,9 +71,33 @@
 
     (:action attack
         :parameters (?a - current_agent ?e1 - enemy1 ?e2 - enemy2 )
-        :precondition (and (not (is_pacman ?e1)) (not (is_pacman ?e2)) (food_available)  )
+        :precondition (and 
+            (food_available)
+        )
         :effect (and 
             (not (food_available))
+        )
+    )
+    
+    (:action attack_aggressive
+        :parameters (?a - current_agent ?e1 - enemy1 ?e2 - enemy2 )
+        :precondition (and 
+            (food_available)
+            (near_food ?a)
+        )
+        :effect (and 
+            (not (food_available))
+        )
+    )
+
+    (:action hunt_invader
+        :parameters (?a - current_agent ?e - enemy)
+        :precondition (and 
+            (is_pacman ?e)
+            (invaders_present)
+        )
+        :effect (and 
+            (not (is_pacman ?e))
         )
     )
 
@@ -81,6 +112,41 @@
         )
     )
 
+    (:action get_capsule
+        :parameters (?a - current_agent)
+        :precondition (and 
+            (capsule_available)
+            (near_capsule ?a)
+            (is_attacker ?a)
+        )
+        :effect (and 
+            (not (capsule_available))
+        )
+    )
+
+    (:action hunt_scared
+        :parameters (?a - current_agent ?e - enemy)
+        :precondition (and 
+            (is_scared ?e)
+            (can_hunt_ghosts)
+            (scared_ghost_near ?a)
+        )
+        :effect (and 
+            (not (is_scared ?e))
+        )
+    )
+
+    (:action return_food
+        :parameters (?a - current_agent)
+        :precondition (and 
+            (is_pacman ?a)
+            (2_food_in_backpack ?a)
+        )
+        :effect (and 
+            (not (is_pacman ?a))
+            (not (food_in_backpack ?a))
+        )
+    )
 
     (:action go_home
         :parameters (?a - current_agent)
@@ -97,6 +163,7 @@
             (not (is_pacman ?e1))
             (not (is_pacman ?e2))
             (winning_gt10)
+            (is_defender ?a)
         )
         :effect (and 
             (defend_foods)

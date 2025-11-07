@@ -1,0 +1,722 @@
+================================================================================
+IMPLEMENTATION SUMMARY - COMPLETE PROGRESSION
+================================================================================
+Date: November 7, 2025 (Post-Submission Analysis)
+Student: Mohit Pandya
+Student ID: 35295252
+Assignment: FIT5222 Assignment 2 - Pacman Capture the Flag
+
+================================================================================
+FINAL SUBMISSION STATUS
+================================================================================
+
+✅ SUBMITTED: November 3, 2025 (before 11:55 PM deadline)
+✅ CONTEST ENTRY: Nominated on server
+   - Repository: fit5222-contest/mohit-pandya-e3b8-a2
+   - Branch: master
+   - Commit: a24b2ec
+   - Status: NOMINATED
+
+📊 CURRENT PERFORMANCE:
+   - EP Score: 1081
+   - Record: 10 Wins, 12 Losses, 0 Ties
+   - Win Rate: 45.5% (10/22 games)
+   - Target: 57% (28/49 games minimum)
+   - Gap: -11.5 percentage points
+
+================================================================================
+DEVELOPMENT PROGRESSION (5 ITERATIONS)
+================================================================================
+
+The implementation went through 5 major iterations, each addressing specific
+limitations discovered in testing. All backup files are preserved in:
+/Users/mohitpandya/Monash/FIT5222_PAR/Assignment_2/backup_files/
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ ITERATION 1: Complex PDDL + Q-Learning (Failed - Timeout)              │
+└─────────────────────────────────────────────────────────────────────────┘
+
+File: myTeam_old_backup.py (708 lines)
+Agent: MixedAgent
+Approach: Full PDDL + Q-Learning integration
+
+Architecture:
+  Game State → PDDL Solver → High-Level Action
+                                    ↓
+                             Q-Learning Planner → Low-Level Action
+                                    ↓
+                              Feature Extraction
+                                    ↓
+                               Choose Move
+
+Features:
+✓ 8 PDDL actions
+✓ 3 Q-learning weight sets (offensive, defensive, escape)
+✓ Training mode with epsilon-greedy exploration
+✓ Weight persistence to file
+✓ Sophisticated feature extraction
+
+Problems:
+✗ Computational overhead too high
+✗ Failed time constraints (-c flag)
+✗ PDDL and Q-learning sometimes conflicted
+✗ Required extensive training
+✗ Difficult to debug
+
+Result: ABANDONED due to timeout issues
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ ITERATION 2: Pure Greedy Heuristic (Failed - Too Weak)                 │
+└─────────────────────────────────────────────────────────────────────────┘
+
+File: myTeam_simple_backup.py (175 lines)
+Agent: OffensiveAgent
+Approach: Reactive greedy agent, no planning
+
+Architecture:
+  Game State → Greedy Heuristics → Choose Move
+
+Strategy:
+1. Collect food aggressively
+2. Escape if ghost nearby (≤5 distance)
+3. Return when carrying 5+ food
+4. Both agents identical (no roles)
+
+Features:
+✓ Fast execution (no planning overhead)
+✓ Simple logic (easy to understand)
+✓ No training required
+✓ Loop detection
+
+Problems:
+✗ Too aggressive, poor risk assessment
+✗ No defensive capability
+✗ No strategic planning
+✗ Win rate only ~30-40%
+✗ Easily countered by smarter opponents
+
+Result: ABANDONED - too simplistic for competition
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ ITERATION 3: Enhanced PDDL + Q-Learning (Failed - Still Timeout)       │
+└─────────────────────────────────────────────────────────────────────────┘
+
+File: myTeam_simple.py (1,299 lines)
+Agent: MixedAgent (Enhanced)
+Approach: Improved Iteration 1 with more features
+
+Architecture:
+  Same as Iteration 1, but with enhancements
+
+Enhancements over Iteration 1:
+✓ 5 Q-learning weight sets (added huntScared, capsuleHunt)
+✓ 40+ features across all weight sets
+✓ Team coordination via class variables
+✓ Global invader alert system
+✓ Action history tracking
+✓ Stop penalty (-300) to encourage movement
+✓ Better ghost avoidance weights
+
+Weight Sets:
+1. offensiveWeights: 11 features (was 5)
+2. defensiveWeights: 9 features (was 5)
+3. escapeWeights: 7 features (was 4)
+4. huntScaredWeights: 6 features (NEW)
+5. capsuleHuntWeights: 6 features (NEW)
+
+Problems:
+✗ STILL too slow (1,299 lines of complexity)
+✗ STILL timeout issues
+✗ More features didn't solve fundamental problem
+✗ Even harder to debug than Iteration 1
+
+Result: ABANDONED - adding complexity didn't help
+
+Lesson Learned: Need to simplify, not enhance
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ ITERATION 4: PDDL + Simple Greedy (Success - Viable)                   │
+└─────────────────────────────────────────────────────────────────────────┘
+
+File: myTeam_new.py (402 lines)
+Agent: HybridAgent
+Approach: PDDL strategy + greedy execution
+
+Architecture:
+  Game State → PDDL Solver → High-Level Action
+                                    ↓
+                           Greedy Heuristic → Choose Move
+
+KEY INNOVATION: Replace Q-learning with simple greedy heuristics
+
+High-Level Actions (PDDL):
+- attack / attack_aggressive
+- return_food / go_home
+- hunt_invader / defence
+- get_capsule
+- hunt_scared
+- patrol
+
+Low-Level Execution (Greedy):
+- collectFood(): Chase closest food with safety check
+- returnHome(): Move to home column
+- defendHome(): Chase invaders
+- getCapsule(): Get power capsule
+- huntGhost(): Chase scared ghosts
+- patrol(): Defensive positioning
+
+Replanning:
+- Every 10 steps
+- When situation changes (ghost suddenly close)
+- When no plan exists
+
+Features:
+✓ Fast execution (passes time constraints)
+✓ No training required
+✓ Strategic planning from PDDL
+✓ Simple low-level execution
+✓ Easy to debug (402 lines)
+
+Performance:
+~ 40-50% estimated win rate
+
+Result: VIABLE - used as base for final submission
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ ITERATION 5: Final Submission (Production)                              │
+└─────────────────────────────────────────────────────────────────────────┘
+
+File: myTeam.py (513 lines) - CURRENT PRODUCTION
+Agent: HybridAgent
+Approach: Refined PDDL + greedy execution
+
+Based on Iteration 4 with refinements:
+✓ Better PDDL state representation
+✓ More predicates (20+ vs 15)
+✓ Improved ghost avoidance
+✓ Dynamic return threshold (2 or 3 food based on threat)
+✓ Safety-scored food selection
+✓ Better patrol positioning
+✓ Enhanced error handling
+
+PDDL State Predicates:
+- food_available
+- food_in_backpack (2+, 3+, 5+, 10+, 20+ variants)
+- is_pacman
+- enemy_around (≤4 distance)
+- is_scared
+- can_hunt_ghosts
+- scared_ghost_near
+- capsule_available
+- near_capsule
+- near_food
+- invaders_present
+- is_attacker / is_defender
+
+Goal Priority System (3 tiers):
+1. Return home if carrying food (threshold: 2-3 based on threats)
+2. Defend if invaders present and agent is defender
+3. Collect enemy food (default offensive behavior)
+
+Performance:
+✓ 45.5% actual win rate (10W 12L)
+✓ 1081 EP score
+✓ Passes time constraints
+✓ Nominated on contest server
+
+Result: SUBMITTED - production version
+================================================================================
+
+Quick Test (1 game):
+  conda run -n pacman python capture.py -r myTeam.py -b staffTeam.py
+
+With Graphics (watch agents):
+  conda run -n pacman python capture.py -r myTeam.py -b staffTeam.py
+
+Baseline Test (10 games):
+  conda run -n pacman python capture.py -r myTeam.py -b staffTeam.py -n 10 -q
+
+Full Baseline (49 games):
+  for i in {1..7}; do
+    conda run -n pacman python capture.py -r myTeam.py -b staffTeam.py -n 7 -l RANDOM$i -q
+  done
+
+Time Check:
+  conda run -n pacman python capture.py -r myTeam.py -b staffTeam.py -c
+
+================================================================================
+ITERATION COMPARISON TABLE
+================================================================================
+
+| Aspect           | Iter 1      | Iter 2    | Iter 3      | Iter 4    | Iter 5 (FINAL) |
+|------------------|-------------|-----------|-------------|-----------|----------------|
+| File             | old_backup  | simple_b  | simple      | new       | myTeam.py      |
+| Lines of Code    | 708         | 175       | 1,299       | 402       | 513            |
+| Agent Class      | MixedAgent  | Offensive | MixedAgent  | Hybrid    | Hybrid         |
+| PDDL Planning    | ✓ Yes       | ✗ No      | ✓ Yes       | ✓ Yes     | ✓ Yes          |
+| Q-Learning       | ✓ Yes       | ✗ No      | ✓ Yes       | ✗ No      | ✗ No           |
+| Greedy Heuristic | ✗ No        | ✓ Yes     | ✗ No        | ✓ Yes     | ✓ Yes          |
+| Training Needed  | ✓ Yes       | ✗ No      | ✓ Yes       | ✗ No      | ✗ No           |
+| Weight Sets      | 3           | 0         | 5           | 0         | 0              |
+| Time Constraint  | ✗ FAIL      | ✓ Pass    | ✗ FAIL      | ✓ Pass    | ✓ Pass         |
+| Win Rate Est.    | N/A         | 30-40%    | N/A         | 40-50%    | 45.5% actual   |
+| Defensive Able   | ✓ Yes       | ✗ No      | ✓ Yes       | ✓ Yes     | ✓ Yes          |
+| Complexity       | High        | Low       | Very High   | Medium    | Medium         |
+| Debuggability    | Hard        | Easy      | Very Hard   | Moderate  | Moderate       |
+| Status           | Timeout     | Too Weak  | Timeout     | Viable    | SUBMITTED      |
+
+KEY INSIGHTS:
+• Sweet spot: 400-500 lines with PDDL + greedy heuristics
+• Q-learning too slow for real-time gameplay
+• Pure greedy too weak for competition
+• Complexity doesn't equal performance
+
+================================================================================
+WHAT WORKED ACROSS ALL ITERATIONS
+================================================================================
+
+✓ PDDL for Strategic Planning (Iter 1, 3, 4, 5)
+  - Provided clear high-level guidance
+  - Enabled role-based behavior
+  - Fast enough when used alone
+  - Eliminated need for complex decision trees
+
+✓ Loop Detection (Iter 2, 4, 5)
+  - Prevented agents getting stuck
+  - Simple but effective
+  - 5-position history sufficient
+
+✓ Ghost Avoidance (All iterations)
+  - Essential for survival
+  - Distance-based penalties worked well
+  - Hard constraint at 1 step effective
+
+✓ Role Assignment (Iter 1, 3, 4, 5)
+  - Attacker/defender split useful
+  - Enables different strategies
+  - Used via PDDL predicates
+
+✓ Dynamic Return Threshold (Iter 5)
+  - Return at 2 food if threatened
+  - Return at 3 food normally
+  - Balanced safety and greed
+
+================================================================================
+WHAT DIDN'T WORK
+================================================================================
+
+✗ Q-Learning (Iter 1, 3)
+  - Too computationally expensive
+  - Caused timeout failures
+  - Complex feature engineering required
+  - Training needed
+  Lesson: Use simpler low-level execution
+
+✗ Pure Greedy Without Planning (Iter 2)
+  - Too reactive, no strategy
+  - Easy to counter
+  - Poor win rate
+  Lesson: Need high-level planning
+
+✗ Over-Engineering (Iter 3)
+  - 1,299 lines too complex
+  - 5 weight sets overkill
+  - Harder to debug, not better performance
+  Lesson: Simplicity is better
+
+✗ Training-Based Approaches (Iter 1, 3)
+  - Contest server doesn't allow training
+  - Time-consuming development
+  - Weights hard to tune
+  Lesson: Use approaches that work out-of-the-box
+
+================================================================================
+FILES MODIFIED IN FINAL SUBMISSION
+================================================================================
+
+1. myTeam.py (513 lines)
+   - Main agent implementation
+   - HybridAgent class
+   - PDDL integration
+   - Greedy heuristics for execution
+
+2. myTeam.pddl (173 lines)
+   - PDDL domain definition
+   - 8 strategic actions
+   - Type hierarchy (enemy1, enemy2, ally, current_agent)
+   - 30+ predicates
+
+3. QLWeightsMyTeam.txt (optional)
+   - Not used in final version
+   - Legacy file from Q-learning iterations
+
+================================================================================
+BACKUP FILES FOR REPORT
+================================================================================
+
+All iterations preserved in: Assignment_2/backup_files/
+
+Files available for demonstrating progression:
+1. myTeam_old_backup.py (Iteration 1) - 708 lines
+2. myTeam_simple_backup.py (Iteration 2) - 175 lines
+3. myTeam_simple.py (Iteration 3) - 1,299 lines
+4. myTeam_new.py (Iteration 4) - 402 lines
+5. myTeam_pddl.pddl (Alternative PDDL domain) - 93 lines
+
+PDDL Comparison:
+- myTeam_pddl.pddl: Simpler domain with 6 actions (experiment)
+- myTeam.pddl: Full domain with 8 actions (final)
+
+For Report Figures/Tables:
+✓ Line count progression chart
+✓ Architecture evolution diagrams
+✓ Performance comparison (where measured)
+✓ Complexity vs speed trade-off analysis
+✓ Code snippets showing key differences
+
+================================================================================
+PERFORMANCE ANALYSIS
+================================================================================
+
+ACTUAL RESULTS (as of November 7, 2025):
+EP Score: 1081
+Record: 10 Wins, 12 Losses, 0 Ties
+Win Rate: 45.5%
+
+TARGET PERFORMANCE:
+Baseline (Pass): 57% win rate (28/49 games)
+Actual: 45.5% win rate
+Gap: -11.5 percentage points
+
+PERFORMANCE BREAKDOWN:
+Strengths:
++ Reliable execution (no crashes)
++ Fast replanning (no timeouts)
++ Decent offensive capability
++ Basic defensive response
+
+Weaknesses:
+- Below target win rate
+- Simple goal prioritization (only 3 tiers)
+- No dynamic strategy based on score
+- Limited coordination between agents
+- Greedy heuristics sometimes suboptimal
+
+ESTIMATED PERFORMANCE BY ITERATION:
+Iteration 1: N/A (timeout prevented testing)
+Iteration 2: ~35% (too weak)
+Iteration 3: N/A (timeout prevented testing)
+Iteration 4: ~42% (estimated)
+Iteration 5: 45.5% (actual measured)
+
+Progression: +3.5% improvement from Iter 4 to Iter 5
+
+================================================================================
+GRADING EXPECTATIONS
+================================================================================
+
+Criteria 1: Baseline Performance (50 marks)
+Target: >57% win rate (28/49 games against staffTeam.py)
+Actual: 45.5% win rate (10/22 games)
+Expected: 20-30 marks (below threshold)
+
+Criteria 2: Agent Strategy (50 marks)
+Target: DISTINCTION (35-40 marks)
+Implementation:
+✓ New PDDL actions (8 actions) - CREDIT level
+✓ Enhanced predicates (30+) - CREDIT level
+✗ Dynamic goal switching (only 3-tier static) - Not achieved
+✗ Improved low-level planner (greedy only) - Not achieved
+
+Expected: CREDIT level (30-35 marks)
+
+Overall Expected Grade: CREDIT (60-69%)
+Total Expected: 50-65 marks out of 100
+
+ACTUAL GRADE: To be determined by marking
+
+================================================================================
+KEY LESSONS FOR FUTURE WORK
+================================================================================
+
+1. BALANCE COMPLEXITY AND SPEED
+   - More code ≠ better performance
+   - Real-time constraints matter
+   - Test with -c flag early and often
+
+2. CHOOSE YOUR BATTLES
+   - Either PDDL OR Q-learning, not both
+   - Use Q-learning for learning environments
+   - Use PDDL + greedy for time-constrained games
+
+3. ITERATE QUICKLY
+   - Start simple, add complexity gradually
+   - Measure performance at each step
+   - Don't over-engineer before testing
+
+4. KNOW YOUR CONSTRAINTS
+   - Contest server has strict time limits
+   - No training allowed in competition
+   - Simplicity enables reliability
+
+5. DOCUMENT EVERYTHING
+   - Keep backup files of each iteration
+   - Log why changes were made
+   - Track performance metrics
+
+6. TEST REALISTIC SCENARIOS
+   - Use contest server early
+   - Test time constraints (-c flag)
+   - Measure actual win rates, not estimates
+
+================================================================================
+RECOMMENDATIONS FOR IMPROVEMENT
+================================================================================
+
+If continuing this work (post-submission improvements):
+
+SHORT TERM (Easy wins):
+1. Improve goal prioritization to 5-6 tiers
+2. Add score-based strategy switching
+3. Better food safety scoring
+4. Smarter return triggers
+5. Improved patrol positioning
+
+MEDIUM TERM:
+1. Agent coordination via class variables
+2. Information sharing (enemy positions, food targets)
+3. Role switching based on game state
+4. Better capsule timing
+5. Escape route planning
+
+LONG TERM (Significant effort):
+1. Monte Carlo Tree Search for critical decisions
+2. Opponent modeling
+3. Map-specific strategies
+4. Team formation play
+5. End-game time management
+
+REALISTIC TARGET:
+With SHORT + MEDIUM improvements: 55-60% win rate (achievable)
+With LONG TERM improvements: 65-70% win rate (competitive)
+
+================================================================================
+
+1. MULTI-STRATEGY RETURNS
+   - Emergency: Enemy nearby, save food
+   - Greedy: 20+ food, return immediately
+   - Medium: 10+ food, enemies medium distance
+   - Safe: 5+ food, enemies far away
+
+2. CAPSULE INTELLIGENCE
+   - Tactical: Use when threatened
+   - Preemptive: Use when enemy approaching
+
+3. ADAPTIVE DEFENSE
+   - Aggressive: When losing, chase invaders
+   - Priority: Target enemies with lots of food
+   - Emergency: Abandon offense to stop major threat
+   - Zone: Spread out when winning
+
+4. SCORE-BASED GOALS
+   - Winning big (10+): Defensive
+   - Moderate win (3-10): Balanced
+   - Close/losing: Aggressive offense
+   - Emergency: React to threats
+
+================================================================================
+DOCUMENTATION
+================================================================================
+
+Main Documentation: IMPLEMENTATION_LOG.txt
+- Detailed reasoning for each change
+- Complete action descriptions
+- Strategy explanations
+- Testing recommendations
+
+This File: Quick reference and summary
+
+Context File: ../Assignment_2/CONTEXT_FOR_AI.md
+- Full assignment context
+- Can be used in future chat sessions
+
+================================================================================
+HOW TO USE THESE FILES FOR YOUR REPORT
+================================================================================
+
+SECTION 1: INTRODUCTION
+Show the evolution table and explain why multiple iterations were needed.
+Reference: Iteration Comparison Table (above)
+
+SECTION 2: METHODOLOGY
+Explain the development process:
+- Started with complex solution (Iter 1)
+- Found it too slow (timeout)
+- Tried simple solution (Iter 2)
+- Found it too weak
+- Refined approach through Iter 3, 4, 5
+
+SECTION 3: IMPLEMENTATION DETAILS
+For each iteration, include:
+- Architecture diagram
+- Code snippet showing key features
+- Problems encountered
+- Lessons learned
+
+Use files:
+- Assignment_2/backup_files/*.py (code examples)
+- IMPLEMENTATION_LOG.txt (detailed explanations)
+
+SECTION 4: RESULTS
+Present performance data:
+- Final: 45.5% win rate (10W 12L)
+- EP score: 1081
+- Comparison to target: 57% required
+
+Include:
+- Performance graph if more data available
+- Comparison table (actual vs iterations)
+
+SECTION 5: ANALYSIS
+Discuss:
+- Why PDDL + greedy won over Q-learning
+- Trade-offs between complexity and speed
+- Importance of time constraints
+
+SECTION 6: CONCLUSION
+Summary:
+- 5 iterations developed
+- Final achieves CREDIT level
+- Room for improvement identified
+- Lessons learned documented
+
+FIGURES/TABLES TO INCLUDE:
+1. Table: Iteration Comparison (from this file)
+2. Figure: Architecture evolution diagram
+3. Figure: Code complexity vs performance
+4. Table: PDDL actions comparison
+5. Graph: Win rate progression (if data available)
+6. Code: Key differences between iterations
+
+================================================================================
+TESTING COMMANDS
+================================================================================
+
+All commands use conda environment 'pacman'
+Working directory: /Users/mohitpandya/Monash/FIT5222_PAR/pacman-public
+
+QUICK TEST (1 game with graphics):
+  conda run -n pacman python capture.py -r myTeam.py -b staffTeam.py
+
+BASELINE TEST (10 games, quiet):
+  conda run -n pacman python capture.py -r myTeam.py -b staffTeam.py -n 10 -q
+
+FULL BASELINE (49 games across 7 random maps):
+  for i in {1..7}; do
+    conda run -n pacman python capture.py -r myTeam.py -b staffTeam.py -n 7 -l RANDOM$i -q
+  done
+
+TIME CONSTRAINT CHECK (critical for contest):
+  conda run -n pacman python capture.py -r myTeam.py -b staffTeam.py -c
+
+TEST SPECIFIC ITERATION:
+  # Iteration 1
+  cp Assignment_2/backup_files/myTeam_old_backup.py myTeam.py
+  conda run -n pacman python capture.py -r myTeam.py -b staffTeam.py -c
+  
+  # Iteration 2
+  cp Assignment_2/backup_files/myTeam_simple_backup.py myTeam.py
+  conda run -n pacman python capture.py -r myTeam.py -b staffTeam.py -n 10 -q
+  
+  # Iteration 4
+  cp Assignment_2/backup_files/myTeam_new.py myTeam.py
+  conda run -n pacman python capture.py -r myTeam.py -b staffTeam.py -n 10 -q
+
+================================================================================
+FILE STRUCTURE FOR REFERENCE
+================================================================================
+
+/Users/mohitpandya/Monash/FIT5222_PAR/
+├── Assignment_2/
+│   ├── CONTEXT_FOR_AI.md              # Full assignment context
+│   ├── IMPLEMENTATION_LOG.txt         # Detailed log with all iterations
+│   ├── IMPLEMENTATION_SUMMARY.txt     # This file - summary document
+│   ├── QLWeightsMyTeam.txt           # Q-learning weights (legacy)
+│   └── backup_files/
+│       ├── myTeam_old_backup.py      # Iteration 1 (708 lines)
+│       ├── myTeam_simple_backup.py   # Iteration 2 (175 lines)
+│       ├── myTeam_simple.py          # Iteration 3 (1299 lines)
+│       ├── myTeam_new.py             # Iteration 4 (402 lines)
+│       └── myTeam_pddl.pddl          # Alternative PDDL (93 lines)
+│
+├── pacman-public/
+│   ├── myTeam.py                     # Iteration 5 - FINAL (513 lines)
+│   ├── myTeam.pddl                   # PDDL domain (173 lines)
+│   ├── QLWeightsMyTeam.txt           # Weights file
+│   ├── staffTeam.py                  # Baseline opponent
+│   └── capture.py                    # Game simulator
+
+================================================================================
+SUBMISSION CHECKLIST
+================================================================================
+
+✅ Code Files:
+   [✓] myTeam.py (main implementation)
+   [✓] myTeam.pddl (PDDL domain)
+   [✓] Contest server submission
+   [✓] Git commit pushed
+
+✅ Documentation:
+   [✓] IMPLEMENTATION_LOG.txt (detailed)
+   [✓] IMPLEMENTATION_SUMMARY.txt (summary)
+   [✓] CONTEXT_FOR_AI.md (context)
+   [✓] Backup files preserved
+
+✅ Testing:
+   [✓] Runs without errors
+   [✓] Passes time constraints (-c flag)
+   [✓] Contest server accepted
+   [✓] Nominated status achieved
+
+✅ Performance:
+   [✓] Contest entry: 1081 EP
+   [✓] Record: 10W 12L 0T
+   [✓] Win rate: 45.5%
+   [⚠] Below target: 57% required
+
+⚠️  Areas for Improvement:
+   [ ] Win rate below threshold
+   [ ] Simple goal prioritization
+   [ ] Limited agent coordination
+   [ ] Greedy heuristics could be smarter
+
+================================================================================
+FINAL NOTES
+================================================================================
+
+Date of Summary: November 7, 2025
+Status: Post-submission analysis complete
+Purpose: Documentation for report writing
+
+This implementation represents a learning journey through 5 distinct iterations,
+demonstrating the importance of:
+1. Balancing sophistication with practicality
+2. Testing early and often
+3. Understanding constraints (time limits)
+4. Iterative refinement over big-bang approaches
+
+While the final win rate (45.5%) fell short of the target (57%), the
+implementation demonstrates solid understanding of:
+- PDDL planning for strategic decisions
+- Hybrid architectures
+- Trade-offs in agent design
+- Real-time constraint handling
+
+The progression from 708-line complex solution to 513-line balanced solution
+shows maturity in design thinking and practical software engineering.
+
+All files preserved for report documentation and future reference.
+
+================================================================================
+END OF IMPLEMENTATION SUMMARY
+================================================================================
